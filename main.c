@@ -13,30 +13,43 @@
 // RX on 12
 // TX on 2
 
-// Scale down to 9600 baud (bits per sec)
+// Scale down to 2400 baud (bits per sec)
 // LDIV[11..0] = ( 8,000,000 / 32 x BAUD ) - 1
 // 
 void initUART(void) {
-    LINCR = _BV(LENA) | _BV(LCONF1) | _BV(LCMD2) | _BV(LCMD0);
+    LINCR = _BV(SWRES) | _BV(LENA) | _BV(LCMD2) | _BV(LCMD0);
     LINBRR = 0x0C; //0b00001100
 }
 
-void UART_putChar(char c) {
-    while(LINSIR & _BV(LTXOK)); // controller is busy
+int UART_putChar(char c) {
     LINDAT = c;
+    return(0);
+    // int i = 0;
+    // while((LINSIR & _BV(LBUSY)) && (i<1000) ){ ++i; } // controller is busy
+    
+    // if (LINSIR & _BV(LBUSY)) {
+    //     LINDAT = c;
+    //     return(0);
+    // } else {
+    //     return(-1);
+    // }
 }
 
 int main (void) {
     DDRD &= ~(_BV(PD4)); // set pin 12 for input
     DDRD |= _BV(PD3); // set pin 2 for output
 
+    DDRB |= _BV(PB7);
+
     sei(); // enable global interrupts    
     initUART(); // intitialize button interrupts
 
+    int status = 0;
     for (;;) {
         // spit out debug messages forever
-        UART_putChar('a');
-        _delay_ms(50);
+        status = UART_putChar('a');
+        PORTB ^= _BV(PB7);
+        _delay_ms(500);
     }
 
     return(0);

@@ -4,7 +4,8 @@
 
 #define F_CPU (1000000L)
 #define UART_BAUD (9600L)
-#define BAUD_PRESCALE (((F_CPU / (UART_BAUD * 32UL))) - 1)
+#define UART_SAMPLERATE (52UL)
+#define BAUD_PRESCALE (((F_CPU / (UART_BAUD * UART_SAMPLERATE))) - 1)
 #include <avr/io.h>
 #include <util/delay.h>
 #include <inttypes.h>
@@ -29,7 +30,6 @@ char* TX_write;
 // TX on 2
 
 // Scale down to 2400 baud (bits per sec)
-// LDIV[11..0] = ( 8,000,000 / 32 x BAUD ) - 1
 // 
 void initUART(void) {
     // set up the transmit buffer
@@ -45,7 +45,25 @@ void initUART(void) {
 
     // reset the controller and activate UART
     LINCR = _BV(SWRES) | _BV(LENA) | _BV(LCMD2) | _BV(LCMD0);
-    LINBRR = 0x0C; //0b00001100
+    LINBTR = 32;
+    LINBRR = 12; // baud rate prescaler
+    LINENIR |= _BV(LENTXOK);
+}
+
+// turn off the UART controller and free the buffer memory
+void endUART(void) {
+    LINCR = _BV(SWRES);
+    free(TX_begin);
+}
+
+// transmission has completed successfully
+// load in next byte if one exists
+ISR(LIN_TC_vect) {
+    if (TX_read != TX_write) {
+
+    } else {
+        LINSIR |= _BV(LTXOK);
+    }
 }
 
 int UART_putChar(char c) {
@@ -61,6 +79,14 @@ int UART_putChar(char c) {
     //     return(-1);
     // }
 }
+
+// int UART_putString(char* s, int len) {
+//     int i;
+//     for (i=0;i<len;i++) {
+//         // add *(s+i*8) to the circular buffer
+//     }
+//     return(0);
+// }
 
 int main (void) {
     DDRB |= _BV(PB7);

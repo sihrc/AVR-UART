@@ -11,7 +11,6 @@
 #include <inttypes.h>
 #include <avr/interrupt.h>
 #include <stdlib.h>
-#include <string.h>
 
 #define MAX_TX_BUFFER_SIZE 200 // maximum size of transmit buffer in bytes
 
@@ -65,6 +64,9 @@ void endUART(void) {
 // transmission has completed successfully
 // load in next byte if one exists
 ISR(LIN_TC_vect) {
+    PORTB ^= _BV(PB7);
+    // _delay_ms(50);
+
     if (TX_read != TX_write) {
         LINDAT = *TX_read;
         TX_read++;
@@ -72,14 +74,16 @@ ISR(LIN_TC_vect) {
             TX_read = TX_begin;
         }
     } else {
-        LINSIR |= _BV(LTXOK);
         transmitting = 0;
+        LINSIR |= _BV(LTXOK);
     }
 }
 
 int UART_transmit() {
     if (transmitting != 1) {
         if (TX_read != TX_write) {
+            PORTB ^= _BV(PB7);
+            // _delay_ms(50);
             transmitting = 1;
             LINDAT = *TX_read;
             TX_read++;
@@ -91,17 +95,18 @@ int UART_transmit() {
     return(0);
 }
 
-int UART_putString(char* s, int len) {
+int UART_putString(char s[], int len) {
     int i;
     for (i=0;i<len;i++) {
         // add *(s+i) to the circular buffer
-        *TX_write = *(s+i);
+        *TX_write = s[i];
 
         TX_write++;
         if (TX_write == TX_end) {
             TX_write = TX_begin;
         }
     }
+    UART_transmit();
     return(0);
 }
 
@@ -109,14 +114,11 @@ int main (void) {
     DDRB |= _BV(PB7);
 
     initUART(); // intitialize UART controller
-    char* testMsg = (char*)malloc(10*sizeof(char));
-    strcpy(testMsg,"Hello");
-    UART_putString(testMsg,5);
+    char testMsg[] = "Hello, World!\n";
     for (;;) {
         // spit out debug messages forever
-        // UART_putChar('a');
-        PORTB ^= _BV(PB7);
         _delay_ms(500);
+        UART_putString(testMsg,14);
     }
 
     return(0);

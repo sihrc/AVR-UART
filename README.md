@@ -16,9 +16,9 @@ Setting up the software
 Usage:
 1. Put uart.c and uart.h in your src/ folder.
 2. Put the following in any file where you want to use UART: #include "uart.h"
-3. Add the following to your Makefile (this may need to be modified depending on your Makefile configuration):
-SOURCES += uart.c
-INC += -Isrc/
+3. Add the following to your Makefile (this may need to be modified depending on your Makefile configuration):  
+SOURCES += uart.c  
+INC += -Isrc/  
 CFLAGS += $(INC)
 
 4. Call initUART to turn on UART functionality.

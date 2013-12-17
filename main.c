@@ -9,7 +9,7 @@ int main (void) {
     for (;;) {
         // spit out debug messages forever
         _delay_ms(500);
-        UART_putString("Hello, World!\n",14);
+        UART_putString("Hello, World!\n");
     }
 
     return(0);

@@ -71,7 +71,8 @@ int UART_transmit() {
     return(0);
 }
 
-int UART_putString(char s[], int len) {
+int UART_putString(char s[]) {
+    int len = strlen(s);
     int i;
     for (i=0;i<len;i++) {
         // add *(s+i) to the circular buffer

@@ -29,6 +29,7 @@
 #include <inttypes.h>
 #include <avr/interrupt.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define MAX_TX_BUFFER_SIZE 200 // maximum size of transmit buffer in bytes
 
@@ -42,8 +43,8 @@ void endUART(void);
 
 /* implemented in uart.c
  * send a string to a computer or other compatible device
- * Sample call: UART_putString("Hello, World!",14);
+ * Sample call: UART_putString("Hello, World!");
  */
-int UART_putString(char s[], int len);
+int UART_putString(char s[]);
 
 #endif
